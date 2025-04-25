@@ -1,6 +1,9 @@
 > [!Note]
 Note: This web app is build using the Firebase Studio. For generating stories I used the Gemini API Key. You can fork this repo and use or modify as you want, but gives a star first, if you like it, I added a preview link of this tool. But you will only get the 15 generation per day, because, this is run on Free Gemini Model.
 
+## Preview
+<img src="./public/preview.png" alt="BhootKatha : AI Horror Story Writer and Visual Scene Image Generator"/>
+
 # **App Name**: Bhootkatha
 
 ## Core Features:
