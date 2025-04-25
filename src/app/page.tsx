@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -52,6 +51,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"; // Import Tooltip components
+import { ApiKeyModal } from "@/components/ui/api-key-modal";
+import { isUsingCustomApiKey, setUserApiKey, removeUserApiKey } from "@/lib/api-key-manager";
+import { Badge } from "@/components/ui/badge";
 
 const MoodSchema = z.enum([
   'Psychological',
@@ -87,10 +89,17 @@ export default function Home() {
   const [isGeneratingScript, setIsGeneratingScript] = React.useState(false);
   const [isGeneratingPrompts, setIsGeneratingPrompts] = React.useState(false);
   const [remainingGenerations, setRemainingGenerations] = React.useState<number | null>(null);
+  const [showApiKeyModal, setShowApiKeyModal] = React.useState(false);
+  const [usingCustomKey, setUsingCustomKey] = React.useState(false);
 
   // Load remaining generations on component mount (client-side only)
   React.useEffect(() => {
     setRemainingGenerations(getRemainingGenerations());
+  }, []);
+
+  // Load API key status on component mount
+  React.useEffect(() => {
+    setUsingCustomKey(isUsingCustomApiKey());
   }, []);
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -104,15 +113,28 @@ export default function Home() {
     },
   });
 
+  const handleApiKeySubmit = (apiKey: string) => {
+    setUserApiKey(apiKey);
+    setUsingCustomKey(true);
+    toast({
+      title: "API Key Added",
+      description: "Your custom API key has been saved. You can now generate more stories.",
+    });
+  };
+
+  const handleResetApiKey = () => {
+    removeUserApiKey();
+    setUsingCustomKey(false);
+    toast({
+      title: "API Key Reset",
+      description: "Reverted to using the default API key.",
+    });
+  };
+
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    // 1. Check rate limit before proceeding
     if (!canGenerateStory()) {
-      toast({
-        title: "Daily Limit Reached",
-        description: "You have reached the maximum number of script generations for today. Please try again tomorrow.",
-        variant: "destructive",
-      });
-      return; // Stop execution if limit is reached
+      setShowApiKeyModal(true);
+      return;
     }
 
     setIsGeneratingScript(true);
@@ -130,21 +152,24 @@ export default function Home() {
       const result: GenerateHorrorScriptOutput = await generateHorrorScript(input);
       setGeneratedScript(result.script);
 
-      // 2. Increment count on successful generation
       incrementGenerationCount();
-      setRemainingGenerations(getRemainingGenerations()); // Update remaining count display
+      setRemainingGenerations(getRemainingGenerations());
 
       toast({
         title: "Script Generated!",
         description: `Your ${data.language} horror script is ready.`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating script:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate script. Please try again.",
-        variant: "destructive",
-      });
+      if (error?.message?.includes("quota") || error?.status === 500) {
+        setShowApiKeyModal(true);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to generate script. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsGeneratingScript(false);
     }
@@ -234,6 +259,34 @@ export default function Home() {
               <span>{remainingGenerations} left today</span>
             </div>
           )}
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-4xl font-bold font-creepy text-primary">BhootKatha</h1>
+            <div className="flex items-center gap-2">
+              {usingCustomKey && (
+                <>
+                  <Badge variant="secondary" className="bg-accent/20">
+                    Using Custom API Key
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleResetApiKey}
+                    className="text-xs"
+                  >
+                    Reset to Default
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowApiKeyModal(true)}
+                className="text-xs"
+              >
+                Use your API Key
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -443,6 +496,11 @@ export default function Home() {
           Powered by AI | Bhootkatha &copy; {new Date().getFullYear()}
         </CardFooter>
       </Card>
+      <ApiKeyModal
+        isOpen={showApiKeyModal}
+        onClose={() => setShowApiKeyModal(false)}
+        onApiKeySubmit={handleApiKeySubmit}
+      />
     </main>
   );
 }

@@ -1,12 +1,13 @@
-import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
+import { genkit } from "genkit";
+import { googleAI } from "@genkit-ai/googleai";
+import { getUserApiKey } from "@/lib/api-key-manager";
 
 export const ai = genkit({
-  promptDir: './prompts',
+  promptDir: "./prompts",
   plugins: [
     googleAI({
-      apiKey: process.env.GOOGLE_GENAI_API_KEY,
+      apiKey: getUserApiKey() || process.env.GOOGLE_GENAI_API_KEY,
     }),
   ],
-  model: 'googleai/gemini-2.0-flash',
+  model: "googleai/gemini-2.0-flash",
 });
