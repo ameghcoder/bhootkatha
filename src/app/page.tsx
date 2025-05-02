@@ -76,7 +76,7 @@ const FormSchema = z.object({
     .number()
     .int()
     .min(50, { message: "Must be at least 50 words." })
-    .max(2000, { message: "Must be 2000 words or less." }),
+    .max(5000, { message: "Must be 5000 words or less." }),
   referencePrompt: z.string().optional(),
 });
 
@@ -374,13 +374,13 @@ export default function Home() {
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="Words (50-2000)"
+                        placeholder="Words (50-5000)"
                         className="border-accent focus:ring-accent"
                         {...field}
                         onChange={e => field.onChange(e.target.value)}
                         value={field.value ?? ''}
                         min={50}
-                        max={2000}
+                        max={5000}
                       />
                     </FormControl>
                     <FormMessage />

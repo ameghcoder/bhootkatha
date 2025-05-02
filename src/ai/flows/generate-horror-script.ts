@@ -38,7 +38,7 @@ const GenerateHorrorScriptInputSchema = z.object({
     .number()
     .int()
     .min(50)
-    .max(2000)
+    .max(5000)
     .describe("The number of words in the script."),
   referencePrompt: z
     .string()
