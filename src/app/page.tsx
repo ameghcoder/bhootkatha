@@ -491,8 +491,8 @@ export default function Home() {
 
         </CardContent>
         <CardFooter className="text-center text-xs text-muted-foreground/70 pt-4">
-          Built by
-          <a className="mx-1 underline text-blue-400" href="https://linkedin.com/in/yrjdeveloper">Yashraj Developer</a> - Using Firebase Studio |
+          {/* Built by <a className="mx-1 underline text-blue-400" href="https://linkedin.com/in/yrjdeveloper">Yashraj Developer</a> - Using Firebase Studio | */}
+          Built with ❤️ |
           Powered by AI | Bhootkatha &copy; {new Date().getFullYear()}
         </CardFooter>
       </Card>
